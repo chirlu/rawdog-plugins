@@ -1,6 +1,7 @@
 import rawdoglib.plugins, rawdoglib.feedparser
 import atomwriter
 import os, time, errno
+from pprint import pprint
 
 class ArchiverException(Exception): pass
 
@@ -33,6 +34,21 @@ class Archiver:
 			entries = self.articles[id]
 			config.log("Archiving ", len(entries), " articles for ", id)
 
+			# Fix up links that contain non-ASCII characters but
+			# are marked as ASCII -- I think this is a feedparser
+			# bug?
+			for entry in entries:
+				if not "links" in entry:
+					continue
+				for link in entry["links"]:
+					if not "title" in link:
+						continue
+					if type(link["title"]) is type(""):
+						try:
+							link["title"] = link["title"].decode("UTF-8")
+						except:
+							link["title"] = link["title"].decode("ISO-8859-1")
+
 			dn = self.dir + "/" + id
 			try:
 				os.makedirs(dn)
@@ -54,6 +70,7 @@ class Archiver:
 
 			f = os.fdopen(fd, "w")
 			atom_data = {"feed": feed_info, "entries": entries}
+			#pprint(atom_data)
 			atomwriter.write_atom(atom_data, f)
 			f.close()
 
