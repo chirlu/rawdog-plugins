@@ -28,7 +28,7 @@ def output_write_files(rawdog, config, articles, article_dates):
 	config.log("paged-output starting")
 
 	outputfile = config["outputfile"]
-	i = outputfile.find('.')
+	i = outputfile.rfind('.')
 	if i != -1:
 		prefix = outputfile[:i]
 		suffix = outputfile[i:]
