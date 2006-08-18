@@ -78,13 +78,13 @@ def match_article(rawdog, article):
 
 	return hide
 
-def output_filter(rawdog, config, articles):
+def output_sorted_filter(rawdog, config, articles):
 	orig = len(articles)
 	config.log("article-filter: examining ", orig, " articles")
 	for i in reversed(range(len(articles))):
 		if match_article(rawdog, articles[i]):
 			del articles[i]
 	config.log("article-filter: hid ", orig - len(articles), " articles")
-	return True
+	return False
 
-rawdoglib.plugins.attach_hook("output_filter", output_filter)
+rawdoglib.plugins.attach_hook("output_sorted_filter", output_sorted_filter)
