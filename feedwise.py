@@ -1,7 +1,11 @@
 # Feedwise Plugin version 0.2 for Rawdog.
-# Ian Glover ian@manicai.net
+# Ian Glover ian@manicai.net (modified slightly by Adam Sampson)
 #
 # Sort articles into chunks by feed rather than date.
+#
+# The article_per_feed option can be specified in the config file to set the
+# maximum number of articles to show per feed.
+
 import rawdoglib.plugins
 
 class FeedwisePlugin:
@@ -28,7 +32,7 @@ class FeedwisePlugin:
                 feed_counts[feed] = 1
             else:
                 feed_counts[feed] = feed_counts[feed] + 1
-            if feed_counts[feed] > config["articles_per_feed"]:
+            if feed_counts[feed] > config.get("articles_per_feed", 50):
                 # We don't want to from the list whilst iterating through it.
                 # So use None as a marker for deletion.
                 to_remove.append(articles[i])
