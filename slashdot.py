@@ -1,16 +1,35 @@
 """
-Add the "from the ... dept." lines to the descriptions of Slashdot
-articles (found in the feed as slash:department).
+Author BAM
+
+Wed Sep  6 16:59:06 EEST 2006
+Modified by Virgil Bucoci <vbucoci at acm.org>
+
+Add support for 'from the ... dept.' and section lines to the Slashdot
+articles (found in the feed as slash:department and slash:section).
+
+Add the following lines to the item template.  You have to use a file
+template, this won't work with the default template.  See the README
+and the config files that come with rawdog.
+
+__if_slash-section__
+<br /><span class="slash-section">Category <em>__slash-section__</em></span>
+__endif__
+
+
+__if_slash-department__
+<br /><span class="slash-dept">from the <em>__slash-department__</em> dept.</spa
+n>
+__endif__
+
 """
 
 class Slashdot:
-    html = '%s\n<p style="font-size:x-small">from the %s dept.</p>'
     def output(self, rawdog, config, feed, article, itembits):
-        if not article.entry_info.has_key('slash_department'):
-            return True
-
-        dept = article.entry_info['slash_department']
-        itembits["description"] = self.html % (itembits["description"], dept)
+        try:
+            itembits["slash-department"] = article.entry_info['slash_department']
+            itembits["slash-section"] = article.entry_info['slash_section']
+        except KeyError:
+            pass
         return True
 
 
