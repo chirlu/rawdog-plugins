@@ -1,7 +1,7 @@
 """
 rawdog plugin to strip img tags from articles.
 author Virgil Bucoci <vbucoci at acm.org>
-version 0.2
+version 0.3
 license: GNU GPL v2.0 
 
 This rawdog plugin strips img tags from feed articles.  More and more
@@ -56,6 +56,13 @@ The generated link can be styled to be less obtrusive:
 
 
 CHANGES
+0.3
+ vb, Tue Oct  3 02:02:41 EEST 2006
+ * fixed a bug where an unbalanced end tag would throw a missing
+   attribute exception and exit rawdog.  Parsers derived from
+   SGMLParser should call SGMLParser.__init__(), or declare a verbose
+   attribute, otherwise an unbalanced tag would exit the application
+
 0.2
  Virgil Bucoci, Fri Sep  8 05:43:16 EEST 2006
  * changed regexp substitution with SGMLParser to handle correctly an
@@ -90,6 +97,10 @@ class BaseHTMLProcessor(SGMLParser):
        Revision: 1.2
        Copyright (c) 2001 Mark Pilgrim
        """
+    def __init__(self, verbose=0):
+        # XXX: SGMLParser.report_unbalanced() needs a verbose
+        # attribute
+        SGMLParser.__init__(self, verbose)
     def reset(self):
         # extend (called by SGMLParser.__init__)
         self.pieces = []
@@ -161,8 +172,9 @@ class BaseHTMLProcessor(SGMLParser):
 
 class StripParser(BaseHTMLProcessor):
     "Replace img tags with links or remove them."
-    def __init__(self, strip="link"):
+    def __init__(self, strip="link", verbose=0):
         self.strip = strip
+        BaseHTMLProcessor.__init__(self, verbose)
     def reset(self):
         self.a = False
         self.img = False
@@ -186,7 +198,7 @@ class StripParser(BaseHTMLProcessor):
         self.pieces.append('<a class="imgbutton" href="%s">IMG</a>' % src)
 
 
-parser = StripParser()
+parser = StripParser(verbose=1)
 class ImgStripPlugin:
     """
     Strip img tags from articles.
