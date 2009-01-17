@@ -1,6 +1,6 @@
 import rawdoglib.plugins, rawdoglib.feedparser
 import atomwriter
-import os, time, errno
+import os, time, errno, traceback
 from pprint import pprint
 
 class ArchiverException(Exception): pass
@@ -28,26 +28,10 @@ class Archiver:
 		day = time.strftime("%Y-%m-%d", time.localtime(self.now))
 
 		for id, feed_info in self.feeds.items():
+			entries = self.articles[id]
 			if id == "":
 				id = "unknown"
-
-			entries = self.articles[id]
 			config.log("Archiving ", len(entries), " articles for ", id)
-
-			# Fix up links that contain non-ASCII characters but
-			# are marked as ASCII -- I think this is a feedparser
-			# bug?
-			for entry in entries:
-				if not "links" in entry:
-					continue
-				for link in entry["links"]:
-					if not "title" in link:
-						continue
-					if type(link["title"]) is type(""):
-						try:
-							link["title"] = link["title"].decode("UTF-8")
-						except:
-							link["title"] = link["title"].decode("ISO-8859-1")
 
 			dn = self.dir + "/" + id
 			try:
@@ -60,18 +44,23 @@ class Archiver:
 				fn = "%s/%s-%s-%d.atom" % (dn, id, day, seq)
 				try:
 					fd = os.open(fn, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-				except OSError, (no, str):
+				except OSError, (no, s):
 					if no == errno.EEXIST:
 						seq += 1
 						continue
 					else:
-						raise ArchiverException("Error opening " + fn + ": " + str)
+						raise ArchiverException("Error opening " + fn + ": " + s)
 				break
 
-			f = os.fdopen(fd, "w")
 			atom_data = {"feed": feed_info, "entries": entries}
-			#pprint(atom_data)
-			atomwriter.write_atom(atom_data, f)
+
+			f = os.fdopen(fd, "w")
+			try:
+				atomwriter.write_atom(atom_data, f)
+			except:
+				print "Error archiving article:"
+				traceback.print_exc()
+				pprint(atom_data)
 			f.close()
 
 		return True
