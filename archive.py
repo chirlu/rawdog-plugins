@@ -31,6 +31,8 @@ class Archiver:
 			entries = self.articles[id]
 			if id == "":
 				id = "unknown"
+			if len(id) > 50:
+				id = id[:50]
 			config.log("Archiving ", len(entries), " articles for ", id)
 
 			dn = self.dir + "/" + id
