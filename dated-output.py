@@ -16,6 +16,9 @@ Various template bits are produced for navigation between the generated pages:
 
 - __dated_output_calendar__ is a calendar for the current month.
 
+- __dated_output_calendars__ is a series of calendars for all months that
+  contain at least one page.
+
 These configuration options are understood:
 
 - "pagedateformat" is the strftime format used to generate filenames.
@@ -67,7 +70,7 @@ class DatedOutput:
 		else:
 			return True
 
-	def generate_list(self, rawdog, config):
+	def generate_list(self):
 		"""Generate the list of pages."""
 
 		f = StringIO()
@@ -93,12 +96,12 @@ class DatedOutput:
 
 		return f.getvalue()
 
-	def generate_calendar(self, rawdog, config):
-		"""Generate the calendar."""
+	def generate_calendar(self):
+		"""Generate a calendar for the month containing the current
+		date."""
 
 		t = time.strptime(self.current_date, self.page_date_format)
 		this_month = datetime.date(t.tm_year, t.tm_mon, 1)
-		cal = calendar.Calendar()
 
 		# Find links to the previous and next months, if they exist.
 		prev_date = None
@@ -116,6 +119,35 @@ class DatedOutput:
 				break
 
 		f = StringIO()
+		self.generate_one_calendar(f, this_month, prev_date, next_date)
+		return f.getvalue()
+
+	def generate_calendars(self):
+		"""Generate calendars for all months."""
+
+		f = StringIO()
+
+		last_month = None
+		dates = self.output_files.keys()
+		dates.sort()
+		dates.reverse()
+		for date in dates:
+			t = time.strptime(date, self.page_date_format)
+			month = datetime.date(t.tm_year, t.tm_mon, 1)
+
+			if month == last_month:
+				continue
+			last_month = month
+
+			self.generate_one_calendar(f, month, None, None)
+			f.write('\n')
+
+		return f.getvalue()
+
+	def generate_one_calendar(self, f, this_month, prev_date, next_date):
+		"""Generate a calendar for a given month."""
+
+		cal = calendar.Calendar()
 
 		f.write('<table class="calendar">\n')
 
@@ -170,16 +202,15 @@ class DatedOutput:
 
 		f.write('</table>\n')
 
-		return f.getvalue()
-
 	def write_output(self, rawdog, config):
 		"""Write out the current output file."""
 
 		bits = rawdog.get_main_template_bits(config)
 		bits["items"] = self.f.getvalue()
 		bits["num_items"] = str(len(rawdog.articles.values()))
-		bits["dated_output_pages"] = self.generate_list(rawdog, config)
-		bits["dated_output_calendar"] = self.generate_calendar(rawdog, config)
+		bits["dated_output_pages"] = self.generate_list()
+		bits["dated_output_calendar"] = self.generate_calendar()
+		bits["dated_output_calendars"] = self.generate_calendars()
 
 		s = fill_template(rawdog.get_template(config), bits)
 		fn = self.current_fn
