@@ -9,8 +9,24 @@ to generate the filenames; it'll switch to a new output file when the
 date that produces changes. The newest output file will get the default name,
 and older ones will have a "-date" suffix inserted before the last ".".
 
-This also generates a __paged_output_pages__ bit in the main template
-that lists the files produced.
+Various template bits are produced for navigation between the generated pages:
+
+- __dated_output_pages__ is a simple unordered list, in the same format as the
+  paged-output plugin.
+
+- __dated_output_calendar__ is a calendar for the current month.
+
+These configuration options are understood:
+
+- "pagedateformat" is the strftime format used to generate filenames.
+
+- "calendarmonthformat" is the strftime format used for month headers in
+  calendars.
+
+- "calendardayformat" is the strftime format used for day-name headers in
+  calendars.
+
+- "calendardateformat" is the strftime format used for dates in calendars.
 
 It is assumed that you're using rawdog's default article sorting mechanism.
 If you're using another plugin that orders the articles differently, this
@@ -25,6 +41,9 @@ from StringIO import StringIO
 class DatedOutput:
 	def __init__(self):
 		self.page_date_format = "%Y-%m-%d"
+		self.calendar_month_format = "%B %Y"
+		self.calendar_day_format = "%a"
+		self.calendar_date_format = "%d"
 
 		self.output_files = {}
 		self.current_date = None
@@ -35,6 +54,15 @@ class DatedOutput:
 	def config_option(self, config, name, value):
 		if name == "pagedateformat":
 			self.page_date_format = value
+			return False
+		elif name == "calendarmonthformat":
+			self.calendar_month_format = value
+			return False
+		elif name == "calendardayformat":
+			self.calendar_day_format = value
+			return False
+		elif name == "calendardateformat":
+			self.calendar_date_format = value
 			return False
 		else:
 			return True
@@ -68,10 +96,6 @@ class DatedOutput:
 	def generate_calendar(self, rawdog, config):
 		"""Generate the calendar."""
 
-		month_head_format = '%B %Y'
-		day_head_format = '%a'
-		day_format = '%d'
-
 		t = time.strptime(self.current_date, self.page_date_format)
 		this_month = datetime.date(t.tm_year, t.tm_mon, 1)
 		cal = calendar.Calendar()
@@ -101,7 +125,7 @@ class DatedOutput:
 		if prev_date is not None:
 			f.write('<a href="%s">&lt;</a>' % os.path.basename(self.output_files[prev_date]))
 		f.write('</td>\n')
-		f.write('<td class="cal-month" colspan="5">%s</td>\n' % this_month.strftime(month_head_format))
+		f.write('<td class="cal-month" colspan="5">%s</td>\n' % this_month.strftime(self.calendar_month_format))
 		f.write('<td class="cal-next">')
 		if next_date is not None:
 			f.write('<a href="%s">&gt;</a>' % os.path.basename(self.output_files[next_date]))
@@ -109,7 +133,7 @@ class DatedOutput:
 		f.write('</tr>\n')
 
 		# Print the day-names bar.
-		f.write('<tr>\n')
+		f.write('<tr class="cal-days">\n')
 		for day in cal.iterweekdays():
 			# Find a date that corresponds to the day number we
 			# want to print. I don't see a better way to do this
@@ -118,7 +142,7 @@ class DatedOutput:
 			while date.weekday() != day:
 				date += datetime.timedelta(days = 1)
 
-			f.write('<th>%s</th>' % date.strftime(day_head_format))
+			f.write('<th>%s</th>' % date.strftime(self.calendar_day_format))
 		f.write('</tr>\n')
 
 		# Print the weeks of the month.
@@ -139,7 +163,7 @@ class DatedOutput:
 					after = '</a>'
 				else:
 					after = ''
-				f.write(day.strftime(day_format))
+				f.write(day.strftime(self.calendar_date_format))
 				f.write(after)
 				f.write('</td>')
 			f.write('</tr>\n')
@@ -154,8 +178,8 @@ class DatedOutput:
 		bits = rawdog.get_main_template_bits(config)
 		bits["items"] = self.f.getvalue()
 		bits["num_items"] = str(len(rawdog.articles.values()))
-		bits["paged_output_pages"] = self.generate_list(rawdog, config)
-		bits["calendar"] = self.generate_calendar(rawdog, config)
+		bits["dated_output_pages"] = self.generate_list(rawdog, config)
+		bits["dated_output_calendar"] = self.generate_calendar(rawdog, config)
 
 		s = fill_template(rawdog.get_template(config), bits)
 		fn = self.current_fn
