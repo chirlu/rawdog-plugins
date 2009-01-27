@@ -1,7 +1,7 @@
 """
 dated-output plugin for rawdog, by Adam Sampson <ats@offog.org>
 
-Needs rawdog 2.5rc1 or later.
+Needs rawdog 2.5rc1 or later, and Python 2.5.
 
 Rather than writing a single output file, this plugin splits the output
 into several files by date. The "pagedateformat" strftime format is used
@@ -17,7 +17,7 @@ If you're using another plugin that orders the articles differently, this
 will not work very well.
 """
 
-import os, time
+import os, time, datetime, calendar
 import rawdoglib.plugins
 from rawdoglib.rawdog import DayWriter, write_ascii, format_time, fill_template, safe_ftime
 from StringIO import StringIO
@@ -27,6 +27,7 @@ class DatedOutput:
 		self.page_date_format = "%Y-%m-%d"
 
 		self.output_files = {}
+		self.current_date = None
 		self.current_fn = None
 		self.f = None
 		self.dw = None
@@ -64,6 +65,89 @@ class DatedOutput:
 
 		return f.getvalue()
 
+	def generate_calendar(self, rawdog, config):
+		"""Generate the calendar."""
+
+		month_head_format = '%B %Y'
+		day_head_format = '%a'
+		day_format = '%d'
+
+		t = time.strptime(self.current_date, self.page_date_format)
+		this_month = datetime.date(t.tm_year, t.tm_mon, 1)
+		cal = calendar.Calendar()
+
+		# Find links to the previous and next months, if they exist.
+		prev_date = None
+		next_date = None
+		dates = self.output_files.keys()
+		dates.sort()
+		for date in dates:
+			t = time.strptime(date, self.page_date_format)
+			that_month = datetime.date(t.tm_year, t.tm_mon, 1)
+
+			if that_month < this_month:
+				prev_date = date
+			if that_month > this_month:
+				next_date = date
+				break
+
+		f = StringIO()
+
+		f.write('<table class="calendar">\n')
+
+		# Print the previous/month name/next bar.
+		f.write('<tr class="cal-head">\n')
+		f.write('<td class="cal-prev">')
+		if prev_date is not None:
+			f.write('<a href="%s">&lt;</a>' % os.path.basename(self.output_files[prev_date]))
+		f.write('</td>\n')
+		f.write('<td class="cal-month" colspan="5">%s</td>\n' % this_month.strftime(month_head_format))
+		f.write('<td class="cal-next">')
+		if next_date is not None:
+			f.write('<a href="%s">&gt;</a>' % os.path.basename(self.output_files[next_date]))
+		f.write('</td>\n')
+		f.write('</tr>\n')
+
+		# Print the day-names bar.
+		f.write('<tr>\n')
+		for day in cal.iterweekdays():
+			# Find a date that corresponds to the day number we
+			# want to print. I don't see a better way to do this
+			# in datetime...
+			date = datetime.date(1981, 9, 25)
+			while date.weekday() != day:
+				date += datetime.timedelta(days = 1)
+
+			f.write('<th>%s</th>' % date.strftime(day_head_format))
+		f.write('</tr>\n')
+
+		# Print the weeks of the month.
+		for week in cal.monthdatescalendar(this_month.year, this_month.month):
+			f.write('<tr class="cal-week">\n')
+			for day in week:
+				date = day.strftime(self.page_date_format)
+
+				f.write('<td class="cal-day">')
+				if day.month != this_month.month:
+					f.write('<em class="cal-othermonth">')
+					after = '</em>'
+				elif date == self.current_date:
+					f.write('<strong class="cal-current">')
+					after = '</strong>'
+				elif date in self.output_files:
+					f.write('<a class="cal-link" href="' + os.path.basename(self.output_files[date]) + '">')
+					after = '</a>'
+				else:
+					after = ''
+				f.write(day.strftime(day_format))
+				f.write(after)
+				f.write('</td>')
+			f.write('</tr>\n')
+
+		f.write('</table>\n')
+
+		return f.getvalue()
+
 	def write_output(self, rawdog, config):
 		"""Write out the current output file."""
 
@@ -71,6 +155,7 @@ class DatedOutput:
 		bits["items"] = self.f.getvalue()
 		bits["num_items"] = str(len(rawdog.articles.values()))
 		bits["paged_output_pages"] = self.generate_list(rawdog, config)
+		bits["calendar"] = self.generate_calendar(rawdog, config)
 
 		s = fill_template(rawdog.get_template(config), bits)
 		fn = self.current_fn
@@ -129,7 +214,10 @@ class DatedOutput:
 
 		# Write out each article.
 		for article in articles:
-			self.set_filename(rawdog, config, self.output_files[article_fn_dates[article]])
+			date = article_fn_dates[article]
+			self.set_filename(rawdog, config, self.output_files[date])
+			self.current_date = date
+
 			self.dw.time(article_dates[article])
 			rawdog.write_article(self.f, article, config)
 
