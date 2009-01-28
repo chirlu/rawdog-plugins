@@ -38,8 +38,14 @@ will not work very well.
 
 import os, time, datetime, calendar
 import rawdoglib.plugins
-from rawdoglib.rawdog import DayWriter, write_ascii, format_time, fill_template, safe_ftime
+from rawdoglib.rawdog import DayWriter, write_ascii, format_time, fill_template, safe_ftime, encode_references, get_system_encoding
 from StringIO import StringIO
+
+def safe_strftime(obj, format):
+	"""Call the strftime method on an object, and convert the result to
+	ASCII-encoded HTML."""
+	u = unicode(obj.strftime(format), get_system_encoding())
+	return encode_references(u)
 
 class DatedOutput:
 	def __init__(self):
@@ -157,7 +163,7 @@ class DatedOutput:
 		if prev_date is not None:
 			f.write('<a href="%s">&lt;</a>' % os.path.basename(self.output_files[prev_date]))
 		f.write('</td>\n')
-		f.write('<td class="cal-month" colspan="5">%s</td>\n' % this_month.strftime(self.calendar_month_format))
+		f.write('<td class="cal-month" colspan="5">%s</td>\n' % safe_strftime(this_month, self.calendar_month_format))
 		f.write('<td class="cal-next">')
 		if next_date is not None:
 			f.write('<a href="%s">&gt;</a>' % os.path.basename(self.output_files[next_date]))
@@ -174,14 +180,14 @@ class DatedOutput:
 			while date.weekday() != day:
 				date += datetime.timedelta(days = 1)
 
-			f.write('<th>%s</th>' % date.strftime(self.calendar_day_format))
+			f.write('<th>%s</th>' % safe_strftime(date, self.calendar_day_format))
 		f.write('</tr>\n')
 
 		# Print the weeks of the month.
 		for week in cal.monthdatescalendar(this_month.year, this_month.month):
 			f.write('<tr class="cal-week">\n')
 			for day in week:
-				date = day.strftime(self.page_date_format)
+				date = safe_strftime(day, self.page_date_format)
 
 				f.write('<td class="cal-day">')
 				if day.month != this_month.month:
@@ -195,7 +201,7 @@ class DatedOutput:
 					after = '</a>'
 				else:
 					after = ''
-				f.write(day.strftime(self.calendar_date_format))
+				f.write(safe_strftime(day, self.calendar_date_format))
 				f.write(after)
 				f.write('</td>')
 			f.write('</tr>\n')
