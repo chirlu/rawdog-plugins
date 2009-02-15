@@ -29,6 +29,17 @@ import libxml2
 from rawdoglib.rawdog import detail_to_html, string_to_html
 from time import gmtime, strftime
 
+def rfc822_date(tm):
+    """Format a GMT timestamp as returned by time.gmtime() in RFC822 format.
+    (This is insensitive to the current locale.)"""
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    months = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+        ]
+    return "%s, %02d %s %04d %02d:%02d:%02d GMT" % \
+        (days[tm[6]], tm[2], months[tm[1] - 1], tm[0], tm[3], tm[4], tm[5])
+
 class RSS_Feed:
     def __init__(self):
         self.options = {
@@ -74,7 +85,7 @@ class RSS_Feed:
             title += ": " + s
         xml_article.newChild(None, 'title', title)
 
-        date = strftime("%a, %d %b %Y %H:%M:%S", gmtime(article.date)) + " +0000"
+        date = rfc822_date(gmtime(article.date))
         xml_article.newChild(None, 'pubDate', date)
 
         s = entry_info.get("link")
@@ -160,8 +171,9 @@ class RSS_Feed:
 
         head = xml.newChild(None, 'head', None)
         head.newChild(None, 'title', self.options["xmltitle"])
-        head.newChild(None, 'dateCreated', strftime("%a, %d %b %Y %H:%M:%S", gmtime()) + " +0000")
-        head.newChild(None, 'dateModified', strftime("%a, %d %b %Y %H:%M:%S", gmtime()) + " +0000")
+        now = rfc822_date(gmtime())
+        head.newChild(None, 'dateCreated', now)
+        head.newChild(None, 'dateModified', now)
         head.newChild(None, 'ownerName', self.options["xmlownername"])
         head.newChild(None, 'ownerEmail', self.options["xmlowneremail"])
 
