@@ -42,6 +42,7 @@ class RSS_Feed:
             "xmldescription": "Planet KDE - http://planetKDE.org/",
             "xmlownername": "Jonathan Riddell",
             "xmlowneremail": "",
+            "xmlmaxarticles": "50",
             }
 
     def config_option(self, config, name, value):
@@ -107,7 +108,11 @@ class RSS_Feed:
         atom_link.setProp('rel', 'self')
         atom_link.setProp('type', 'application/rss+xml')
 
-        for article in articles:
+        try:
+            maxarticles = int(self.options["xmlmaxarticles"])
+        except ValueError:
+            maxarticles = len(articles)
+        for article in articles[:maxarticles]:
             if article.date is not None:
                 xml_article = channel.newChild(None, 'item', None)
                 self.article_to_xml(xml_article, rawdog, config, article)
