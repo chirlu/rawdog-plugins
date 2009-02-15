@@ -34,6 +34,13 @@ class RSS_Feed:
             "outputxml": "rss20.xml",
             "outputfoaf": "foafroll.xml",
             "outputopml": "opml.xml",
+            "xmltitle": "Planet KDE",
+            "xmllink": "http://planetKDE.org/",
+            "xmllanguage": "en",
+            "xmlurl": "http://planetKDE.org/rss20.xml",
+            "xmldescription": "Planet KDE - http://planetKDE.org/",
+            "xmlownername": "Jonathan Riddell",
+            "xmlowneremail": "",
             }
 
     def config_option(self, config, name, value):
@@ -86,13 +93,13 @@ class RSS_Feed:
         rss.setProp('xmlns:atom', 'http://www.w3.org/2005/Atom')
 
         channel = rss.newChild(None, 'channel', None)
-        channel.newChild(None, 'title', "Planet KDE")
-        channel.newChild(None, 'link', "http://planetKDE.org/")
-        channel.newChild(None, 'language', "en")
-        channel.newChild(None, 'description', "Planet KDE - http://planetKDE.org/")
+        channel.newChild(None, 'title', self.options["xmltitle"])
+        channel.newChild(None, 'link', self.options["xmllink"])
+        channel.newChild(None, 'language', self.options["xmllanguage"])
+        channel.newChild(None, 'description', self.options["xmldescription"])
 
         atom_link = channel.newChild(None, 'atom:link', None)
-        atom_link.setProp('href', 'http://planetKDE.org/rss20.xml')
+        atom_link.setProp('href', self.options["xmlurl"])
         atom_link.setProp('rel', 'self')
         atom_link.setProp('type', 'application/rss+xml')
 
@@ -115,8 +122,8 @@ class RSS_Feed:
         xml.setProp('xmlns:dc', "http://purl.org/dc/elements/1.1/")
 
         group = xml.newChild(None, 'foaf:Group', None)
-        group.newChild(None, 'foaf:name', "Planet KDE")
-        group.newChild(None, 'foaf:homepage', "http://planet.kde.org/")
+        group.newChild(None, 'foaf:name', self.options["xmltitle"])
+        group.newChild(None, 'foaf:homepage', self.options["xmllink"])
 
         seeAlso = group.newChild(None, 'rdfs:seeAlso', None)
         seeAlso.setProp('rdf:resource', '')
@@ -143,11 +150,11 @@ class RSS_Feed:
         xml.setProp('version', "1.1")
 
         head = xml.newChild(None, 'head', None)
-        head.newChild(None, 'title', "Planet KDE")
+        head.newChild(None, 'title', self.options["xmltitle"])
         head.newChild(None, 'dateCreated', strftime("%a, %d %b %Y %H:%M:%S", gmtime()) + " +0000")
         head.newChild(None, 'dateModified', strftime("%a, %d %b %Y %H:%M:%S", gmtime()) + " +0000")
-        head.newChild(None, 'ownerName', "Jonathan Riddell")
-        head.newChild(None, 'ownerEmail', "")
+        head.newChild(None, 'ownerName', self.options["xmlownername"])
+        head.newChild(None, 'ownerEmail', self.options["xmlowneremail"])
 
         body = xml.newChild(None, 'body', None)
         for feed in config["feedslist"]:
