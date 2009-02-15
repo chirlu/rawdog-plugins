@@ -1,11 +1,26 @@
 # -*- coding: utf-8 -*-
 # A simple RSS 2.0 generator for rawdog
-# Copyright Jonathan Riddell 2008
-# May be copied only under the terms of the GNU GPL version 2 or later
+# Copyright 2008 Jonathan Riddell
+# Copyright 2009 Adam Sampson <ats@offog.org>
+#
+# rawdog_rss is free software; you can redistribute and/or modify it
+# under the terms of that license as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option)
+# any later version.
+#
+# rawdog_rss is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with rawdog_rss; see the file COPYING. If not, write to the Free
+# Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301, USA, or see http://www.gnu.org/.
 #
 # Writes RSS feed at the end of a rawdog run 
 # Put in <configdir>/plugins/rawdog_rss.py
-# Add "define outputxml /path/to/feed.rss" to config to set file out
+# Add "outputxml /path/to/feed.rss" to config to set file out
 
 import os, time, cgi
 import rawdoglib.plugins, rawdoglib.rawdog
@@ -14,11 +29,13 @@ import libxml2
 from time import gmtime, strftime
 
 class RSS_Feed:
-    def __init__(self, rawdog, config):
-        if config['defines'].has_key('outputxml'):
-            self.out_file = config['defines']['outputxml']
-        else:
-            self.out_file = 'rss20.xml'
+    def __init__(self):
+        self.options = {
+            "outputxml": "rss20.xml",
+            "outputfoaf": "foafroll.xml",
+            "outputopml": "opml.xml",
+            }
+
         self.doc_open()
 
         self.xml_articles = self.xml.xpathEval('/rss/channel')[0]
@@ -32,23 +49,20 @@ class RSS_Feed:
         atomLink.setProp('rel', 'self')
         atomLink.setProp('type', 'application/rss+xml')
 
-        if config['defines'].has_key('outputfoaf'):
-            self.foaf_file = config['defines']['outputfoaf']
-        else:
-            self.foaf_file = 'foafroll.xml'
-
         self.foaf_articles = self.foafdoc_open()
         self.foaf_articles.newChild(None, 'foaf:name', "Planet KDE")
         self.foaf_articles.newChild(None, 'foaf:homepage', "http://planet.kde.org/")
         seeAlso = self.foaf_articles.newChild(None, 'rdfs:seeAlso', None)
         seeAlso.setProp('rdf:resource', '')
 
-        if config['defines'].has_key('outputopml'):
-            self.opml_file = config['defines']['outputopml']
-        else:
-            self.opml_file = 'opml.xml'
-
         self.opml_articles = self.opmldoc_open()
+
+    def config_option(self, config, name, value):
+        if name in self.options:
+            self.options[name] = value
+            return False
+        else:
+            return True
 
     def doc_open(self):
         self.doc = libxml2.newDoc("1.0")
@@ -121,7 +135,7 @@ class RSS_Feed:
         return True
 
     def __write(self):
-        self.doc.saveFormatFile(self.out_file, 1)
+        self.doc.saveFormatFile(self.options["outputxml"], 1)
         self.doc.freeDoc()
 
     def output_write(self, rawdog, config, articles):
@@ -150,15 +164,13 @@ class RSS_Feed:
             outline.setProp('text', feed[2]['define_name'])
             outline.setProp('xmlUrl', feed[0])
 
-        self.foafdoc.saveFormatFile(self.foaf_file, 1)
+        self.foafdoc.saveFormatFile(self.options["outputfoaf"], 1)
         self.foafdoc.freeDoc()
 
-        self.opmldoc.saveFormatFile(self.opml_file, 1)
+        self.opmldoc.saveFormatFile(self.options["outputopml"], 1)
         self.opmldoc.freeDoc()
 
-def startup(rawdog, config):
-    rss_feed = RSS_Feed(rawdog, config)
-    rawdoglib.plugins.attach_hook("output_write", rss_feed.output_write)
-    rawdoglib.plugins.attach_hook("shutdown", rss_feed.shutdown)
-    return True
-rawdoglib.plugins.attach_hook("startup", startup)
+rss_feed = RSS_Feed()
+rawdoglib.plugins.attach_hook("config_option", rss_feed.config_option)
+rawdoglib.plugins.attach_hook("output_write", rss_feed.output_write)
+rawdoglib.plugins.attach_hook("shutdown", rss_feed.shutdown)
