@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# A simple RSS 2.0 generator for rawdog
+#
+# rawdog plugin to generate RSS, OPML and FOAF output
 # Copyright 2008 Jonathan Riddell
 # Copyright 2009 Adam Sampson <ats@offog.org>
 #
@@ -18,9 +19,25 @@
 # Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA, or see http://www.gnu.org/.
 #
-# Writes RSS feed at the end of a rawdog run
-# Put in <configdir>/plugins/rawdog_rss.py
-# Add "outputxml /path/to/feed.rss" to config to set file out
+# ---
+#
+# This plugin supports the following configuration options:
+#
+# outputxml         RSS output filename
+# outputfoaf        FOAF output filename
+# outputopml        OPML output filename
+# xmltitle          Feed title (e.g. "Planet Foo")
+# xmllink           Feed link (e.g. "http://planet-foo.example.com/")
+# xmllanguage       Feed language (e.g. "en")
+# xmlurl            URL of the generated RSS (e.g. "http://planet-foo.example.com/rss20.xml")
+# xmldescription    Feed description (e.g. "People who work on foo")
+# xmlownername      Feed owner's name
+# xmlowneremail     Feed owner's email address
+# xmlmaxarticles    Maximum number of articles to include in the feed
+#                   (defaults to maxarticles if not specified)
+#
+# If you're using rawdog to produce a planet page, you'll probably want to have
+# "sortbyfeeddate true" in your config file too.
 
 import os, time, cgi
 import rawdoglib.plugins, rawdoglib.rawdog
@@ -53,7 +70,7 @@ class RSS_Feed:
             "xmldescription": "Planet KDE - http://planetKDE.org/",
             "xmlownername": "Jonathan Riddell",
             "xmlowneremail": "",
-            "xmlmaxarticles": "50",
+            "xmlmaxarticles": "",
             }
 
     def config_option(self, config, name, value):
