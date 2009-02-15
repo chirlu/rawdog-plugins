@@ -50,6 +50,15 @@ class RSS_Feed:
         else:
             return True
 
+    def feed_name(self, feed, config):
+        """Return the label used for a feed. If it has a "name" define, use
+        that; otherwise, use the feed title."""
+
+        if "define_name" in feed.args:
+            return feed.args["define_name"]
+        else:
+            return feed.get_html_name(config)
+
     def describe(self, parent, description):
         try:
             parent.newChild(None, 'description', description)
@@ -65,9 +74,7 @@ class RSS_Feed:
         except KeyError:
             print "KeyError on title"
             return
-        for feed in config["feedslist"]:
-            if feed[0] == article.feed:
-                title = feed[2]["define_name"] + ": " + title
+        title = self.feed_name(rawdog.feeds[article.feed], config) + ": " + title
         xml_article.newChild(None, 'title', title)
         date = strftime("%a, %d %b %Y %H:%M:%S", gmtime(article.date)) + " +0000"
         xml_article.newChild(None, 'pubDate', date)
@@ -128,14 +135,14 @@ class RSS_Feed:
         seeAlso = group.newChild(None, 'rdfs:seeAlso', None)
         seeAlso.setProp('rdf:resource', '')
 
-        for feed in config["feedslist"]:
+        for url in sorted(rawdog.feeds.keys()):
             member = group.newChild(None, 'foaf:member', None)
 
             agent = member.newChild(None, 'foaf:Agent', None)
-            agent.newChild(None, 'foaf:name', feed[2]['define_name'])
+            agent.newChild(None, 'foaf:name', self.feed_name(rawdog.feeds[url], config))
             weblog = agent.newChild(None, 'foaf:weblog', None)
             document = weblog.newChild(None, 'foaf:Document', None)
-            document.setProp('rdf:about', feed[0])
+            document.setProp('rdf:about', url)
             seealso = document.newChild(None, 'rdfs:seeAlso', None)
             channel = seealso.newChild(None, 'rss:channel', None)
             channel.setProp('rdf:about', '')
@@ -157,10 +164,10 @@ class RSS_Feed:
         head.newChild(None, 'ownerEmail', self.options["xmlowneremail"])
 
         body = xml.newChild(None, 'body', None)
-        for feed in config["feedslist"]:
+        for url in sorted(rawdog.feeds.keys()):
             outline = body.newChild(None, 'outline', None)
-            outline.setProp('text', feed[2]['define_name'])
-            outline.setProp('xmlUrl', feed[0])
+            outline.setProp('text', self.feed_name(rawdog.feeds[url], config))
+            outline.setProp('xmlUrl', url)
 
         doc.saveFormatFile(self.options["outputopml"], 1)
         doc.freeDoc()
