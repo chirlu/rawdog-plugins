@@ -18,7 +18,7 @@
 # Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA, or see http://www.gnu.org/.
 #
-# Writes RSS feed at the end of a rawdog run 
+# Writes RSS feed at the end of a rawdog run
 # Put in <configdir>/plugins/rawdog_rss.py
 # Add "outputxml /path/to/feed.rss" to config to set file out
 
@@ -36,27 +36,6 @@ class RSS_Feed:
             "outputopml": "opml.xml",
             }
 
-        self.doc_open()
-
-        self.xml_articles = self.xml.xpathEval('/rss/channel')[0]
-
-        self.xml_articles.newChild(None, 'title', "Planet KDE")
-        self.xml_articles.newChild(None, 'link', "http://planetKDE.org/")
-        self.xml_articles.newChild(None, 'language', "en")
-        self.xml_articles.newChild(None, 'description', "Planet KDE - http://planetKDE.org/")
-        atomLink = self.xml_articles.newChild(None, 'atom:link', None)
-        atomLink.setProp('href', 'http://planetKDE.org/rss20.xml')
-        atomLink.setProp('rel', 'self')
-        atomLink.setProp('type', 'application/rss+xml')
-
-        self.foaf_articles = self.foafdoc_open()
-        self.foaf_articles.newChild(None, 'foaf:name', "Planet KDE")
-        self.foaf_articles.newChild(None, 'foaf:homepage', "http://planet.kde.org/")
-        seeAlso = self.foaf_articles.newChild(None, 'rdfs:seeAlso', None)
-        seeAlso.setProp('rdf:resource', '')
-
-        self.opml_articles = self.opmldoc_open()
-
     def config_option(self, config, name, value):
         if name in self.options:
             self.options[name] = value
@@ -64,49 +43,13 @@ class RSS_Feed:
         else:
             return True
 
-    def doc_open(self):
-        self.doc = libxml2.newDoc("1.0")
-        self.xml = self.doc.newChild(None, 'rss', None)
-
-        self.xml.setProp('version', "2.0")            
-        self.xml.setProp('xmlns:dc', "http://purl.org/dc/elements/1.1/")            
-        self.xml.setProp('xmlns:atom', 'http://www.w3.org/2005/Atom')
-
-        self.xml.newChild(None, 'channel', None)
-
-    def foafdoc_open(self):
-        self.foafdoc = libxml2.newDoc("1.0")
-        self.foafxml = self.foafdoc.newChild(None, 'rdf:RDF', None)
-
-        self.foafxml.setProp('xmlns:rdf', "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-        self.foafxml.setProp('xmlns:rdfs', "http://www.w3.org/2000/01/rdf-schema#")
-        self.foafxml.setProp('xmlns:foaf', "http://xmlns.com/foaf/0.1/")
-        self.foafxml.setProp('xmlns:rss', "http://purl.org/rss/1.0/")
-        self.foafxml.setProp('xmlns:dc', "http://purl.org/dc/elements/1.1/")
-
-        return self.foafxml.newChild(None, 'foaf:Group', None)
-
-    def opmldoc_open(self):
-        self.opmldoc = libxml2.newDoc("1.0")
-        self.opmlxml = self.opmldoc.newChild(None, 'opml', None)
-        self.opmlxml.setProp('version', "1.1")
-
-        head = self.opmlxml.newChild(None, 'head', None)
-        head.newChild(None, 'title', "Planet KDE")
-        head.newChild(None, 'dateCreated', strftime("%a, %d %b %Y %H:%M:%S", gmtime()) + " +0000")
-        head.newChild(None, 'dateModified', strftime("%a, %d %b %Y %H:%M:%S", gmtime()) + " +0000")        
-        head.newChild(None, 'ownerName', "Jonathan Riddell")
-        head.newChild(None, 'ownerEmail', "")
-
-        return self.opmlxml.newChild(None, 'body', None)
-
     def describe(self, parent, description):
         try:
             parent.newChild(None, 'description', description)
         except TypeError:
             print "TypeError in description"
 
-    def __article_sync(self, xml_article, rawdog, config, article):
+    def article_to_xml(self, xml_article, rawdog, config, article):
         entry_info = article.entry_info
         guid = xml_article.newChild(None, 'guid', article.hash)
         guid.setProp('isPermaLink', 'false')
@@ -134,23 +77,53 @@ class RSS_Feed:
 
         return True
 
-    def __write(self):
-        self.doc.saveFormatFile(self.options["outputxml"], 1)
-        self.doc.freeDoc()
+    def write_rss(self, rawdog, config, articles):
+        doc = libxml2.newDoc("1.0")
 
-    def output_write(self, rawdog, config, articles):
+        rss = doc.newChild(None, 'rss', None)
+        rss.setProp('version', "2.0")
+        rss.setProp('xmlns:dc', "http://purl.org/dc/elements/1.1/")
+        rss.setProp('xmlns:atom', 'http://www.w3.org/2005/Atom')
+
+        channel = rss.newChild(None, 'channel', None)
+        channel.newChild(None, 'title', "Planet KDE")
+        channel.newChild(None, 'link', "http://planetKDE.org/")
+        channel.newChild(None, 'language', "en")
+        channel.newChild(None, 'description', "Planet KDE - http://planetKDE.org/")
+
+        atom_link = channel.newChild(None, 'atom:link', None)
+        atom_link.setProp('href', 'http://planetKDE.org/rss20.xml')
+        atom_link.setProp('rel', 'self')
+        atom_link.setProp('type', 'application/rss+xml')
+
         for article in articles:
             if article.date is not None:
-                xml_article = self.xml_articles.newChild(None, 'item', None)
-                self.__article_sync(xml_article, rawdog, config, article)
+                xml_article = channel.newChild(None, 'item', None)
+                self.article_to_xml(xml_article, rawdog, config, article)
 
-        self.__write()
-        return True
+        doc.saveFormatFile(self.options["outputxml"], 1)
+        doc.freeDoc()
 
-    def shutdown(self, rawdog, config):
+    def write_foaf(self, rawdog, config):
+        doc = libxml2.newDoc("1.0")
+
+        xml = doc.newChild(None, 'rdf:RDF', None)
+        xml.setProp('xmlns:rdf', "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+        xml.setProp('xmlns:rdfs', "http://www.w3.org/2000/01/rdf-schema#")
+        xml.setProp('xmlns:foaf', "http://xmlns.com/foaf/0.1/")
+        xml.setProp('xmlns:rss', "http://purl.org/rss/1.0/")
+        xml.setProp('xmlns:dc', "http://purl.org/dc/elements/1.1/")
+
+        group = xml.newChild(None, 'foaf:Group', None)
+        group.newChild(None, 'foaf:name', "Planet KDE")
+        group.newChild(None, 'foaf:homepage', "http://planet.kde.org/")
+
+        seeAlso = group.newChild(None, 'rdfs:seeAlso', None)
+        seeAlso.setProp('rdf:resource', '')
+
         for feed in config["feedslist"]:
-            print str(feed)
-            member = self.foaf_articles.newChild(None, 'foaf:member', None)
+            member = group.newChild(None, 'foaf:member', None)
+
             agent = member.newChild(None, 'foaf:Agent', None)
             agent.newChild(None, 'foaf:name', feed[2]['define_name'])
             weblog = agent.newChild(None, 'foaf:weblog', None)
@@ -160,17 +133,38 @@ class RSS_Feed:
             channel = seealso.newChild(None, 'rss:channel', None)
             channel.setProp('rdf:about', '')
 
-            outline = self.opml_articles.newChild(None, 'outline', None)
+        doc.saveFormatFile(self.options["outputfoaf"], 1)
+        doc.freeDoc()
+
+    def write_opml(self, rawdog, config):
+        doc = libxml2.newDoc("1.0")
+
+        xml = doc.newChild(None, 'opml', None)
+        xml.setProp('version', "1.1")
+
+        head = xml.newChild(None, 'head', None)
+        head.newChild(None, 'title', "Planet KDE")
+        head.newChild(None, 'dateCreated', strftime("%a, %d %b %Y %H:%M:%S", gmtime()) + " +0000")
+        head.newChild(None, 'dateModified', strftime("%a, %d %b %Y %H:%M:%S", gmtime()) + " +0000")
+        head.newChild(None, 'ownerName', "Jonathan Riddell")
+        head.newChild(None, 'ownerEmail', "")
+
+        body = xml.newChild(None, 'body', None)
+        for feed in config["feedslist"]:
+            outline = body.newChild(None, 'outline', None)
             outline.setProp('text', feed[2]['define_name'])
             outline.setProp('xmlUrl', feed[0])
 
-        self.foafdoc.saveFormatFile(self.options["outputfoaf"], 1)
-        self.foafdoc.freeDoc()
+        doc.saveFormatFile(self.options["outputopml"], 1)
+        doc.freeDoc()
 
-        self.opmldoc.saveFormatFile(self.options["outputopml"], 1)
-        self.opmldoc.freeDoc()
+    def output_write(self, rawdog, config, articles):
+        self.write_rss(rawdog, config, articles)
+        self.write_foaf(rawdog, config)
+        self.write_opml(rawdog, config)
+
+        return True
 
 rss_feed = RSS_Feed()
 rawdoglib.plugins.attach_hook("config_option", rss_feed.config_option)
 rawdoglib.plugins.attach_hook("output_write", rss_feed.output_write)
-rawdoglib.plugins.attach_hook("shutdown", rss_feed.shutdown)
