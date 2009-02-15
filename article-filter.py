@@ -6,6 +6,11 @@
 # "show" or "hide", then has a number of field-name/regexp pairs. All the
 # expressions in an entry must match for it to be activated.
 #
+# The field names permitted are the fields of an "entry" in feedparser;
+# see the sections called "entries[i].fieldname" in the feedparser manual at
+# <http://feedparser.org/docs/> for more details. Some possibilities:
+# title, summary, link, content, id, author...
+#
 # Some examples might make it clearer:
 #
 # # I don't want to see articles by Xeni or Cory -- well, except Cory's
