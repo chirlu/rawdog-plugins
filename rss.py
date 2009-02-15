@@ -26,6 +26,7 @@ import os, time, cgi
 import rawdoglib.plugins, rawdoglib.rawdog
 import libxml2
 
+from rawdoglib.rawdog import detail_to_html, string_to_html
 from time import gmtime, strftime
 
 class RSS_Feed:
@@ -59,35 +60,31 @@ class RSS_Feed:
         else:
             return feed.get_html_name(config)
 
-    def describe(self, parent, description):
-        try:
-            parent.newChild(None, 'description', description)
-        except TypeError:
-            print "TypeError in description"
-
     def article_to_xml(self, xml_article, rawdog, config, article):
         entry_info = article.entry_info
-        guid = xml_article.newChild(None, 'guid', article.hash)
+
+        id = entry_info.get("id", self.options["xmlurl"] + "#id" + article.hash)
+        guid = xml_article.newChild(None, 'guid', string_to_html(id, config))
         guid.setProp('isPermaLink', 'false')
-        try:
-            title = entry_info['title_raw'].encode('utf8', 'ignore')
-        except KeyError:
-            print "KeyError on title"
-            return
-        title = self.feed_name(rawdog.feeds[article.feed], config) + ": " + title
+
+        title = self.feed_name(rawdog.feeds[article.feed], config)
+        s = detail_to_html(entry_info.get("title_detail"), True, config)
+        if s is not None:
+            title += ": " + s
         xml_article.newChild(None, 'title', title)
+
         date = strftime("%a, %d %b %Y %H:%M:%S", gmtime(article.date)) + " +0000"
         xml_article.newChild(None, 'pubDate', date)
-        if entry_info.has_key('link'):
-            xml_article.newChild(None, 'link', entry_info['link'])
 
-        if entry_info.has_key('content'):
-            for content in entry_info['content']:
-                content = content['value']
-        elif entry_info.has_key('summary_detail'):
-            content = entry_info['summary_detail']['value']
-        content = cgi.escape(content).encode('utf8', 'ignore')
-        self.describe(xml_article, content)
+        s = entry_info.get("link")
+        if s is not None and s != "":
+            xml_article.newChild(None, 'link', string_to_html(s, config))
+
+        for key in ["content", "summary_detail"]:
+            s = detail_to_html(entry_info.get(key), False, config)
+            if s is not None:
+                xml_article.newChild(None, 'description', s)
+                break
 
         return True
 
