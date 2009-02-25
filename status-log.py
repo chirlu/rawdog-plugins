@@ -29,7 +29,7 @@ class StatusLogPlugin:
 			return True
 
 	def mid_update_feed(self, rawdog, config, feed, content):
-		if content is None:
+		if content is None or "rawdog_exception" in content:
 			status = "error-parse"
 		else:
 			s = content.get("status")
