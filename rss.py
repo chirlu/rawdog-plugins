@@ -102,8 +102,9 @@ class RSS_Feed:
             title += ": " + s
         xml_article.newChild(None, 'title', title)
 
-        date = rfc822_date(gmtime(article.date))
-        xml_article.newChild(None, 'pubDate', date)
+        if article.date is not None:
+            date = rfc822_date(gmtime(article.date))
+            xml_article.newChild(None, 'pubDate', date)
 
         s = entry_info.get("link")
         if s is not None and s != "":
@@ -141,9 +142,8 @@ class RSS_Feed:
         except ValueError:
             maxarticles = len(articles)
         for article in articles[:maxarticles]:
-            if article.date is not None:
-                xml_article = channel.newChild(None, 'item', None)
-                self.article_to_xml(xml_article, rawdog, config, article)
+            xml_article = channel.newChild(None, 'item', None)
+            self.article_to_xml(xml_article, rawdog, config, article)
 
         doc.saveFormatFile(self.options["outputxml"], 1)
         doc.freeDoc()
