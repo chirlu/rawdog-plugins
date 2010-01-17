@@ -50,6 +50,10 @@ def output_write_files(rawdog, config, articles, article_dates):
 		fns.append(fn)
 
 	for i in range(len(chunks)):
+		fn = fns[i]
+		date = format_time(article_dates[chunks[i][0]], config)
+		config.log("paged-output writing ", fn, " (", date, ")")
+
 		f = StringIO()
 		dw = DayWriter(f, config)
 		for article in chunks[i]:
@@ -76,8 +80,6 @@ def output_write_files(rawdog, config, articles, article_dates):
 		bits["paged_output_pages"] = f.getvalue()
 
 		s = fill_template(rawdog.get_template(config), bits)
-		fn = fns[i]
-		config.log("paged-output writing output file: ", fn)
 		f = open(fn + ".new", "w")
 		write_ascii(f, s, config)
 		f.close()
