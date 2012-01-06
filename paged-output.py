@@ -68,11 +68,11 @@ def output_write_files(rawdog, config, articles, article_dates):
 		f = StringIO()
 		f.write('<ul class="paged_output_pages">\n')
 		for j in range(len(chunks)):
-			first = chunks[j][0]
+			latest_date = max([article_dates[a] for a in chunks[j]])
 			f.write('<li>')
 			if i != j:
 				f.write('<a href="' + os.path.basename(fns[j]) + '">')
-			f.write(format_time(article_dates[first], config))
+			f.write(format_time(latest_date, config))
 			if i != j:
 				f.write('</a>')
 			f.write('</li>\n')
