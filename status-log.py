@@ -105,9 +105,16 @@ class StatusLogPlugin:
 
 			if url not in feeds:
 				feeds[url] = [(None, None, -1)] * divs
-			n = int((int(t) - starttime) / division)
+			try:
+				n = int((int(t) - starttime) / division)
+			except ValueError:
+				config.log("Bad line in logfile at ", f.tell(), ": ", repr(l))
+				continue
 			if n >= divs:
 				config.log("Log entry after current time: ", l[:-1])
+				continue
+			if n < 0:
+				config.log("Clock change detected; ignoring: ", l[:-1])
 				continue
 
 			val = 0
