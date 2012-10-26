@@ -90,6 +90,6 @@ def output_sorted_filter(rawdog, config, articles):
 		if match_article(rawdog, articles[i]):
 			del articles[i]
 	config.log("article-filter: hid ", orig - len(articles), " articles")
-	return False
+	return True
 
 rawdoglib.plugins.attach_hook("output_sorted_filter", output_sorted_filter)
