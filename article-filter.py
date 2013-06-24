@@ -8,7 +8,7 @@
 #
 # The field names permitted are the fields of an "entry" in feedparser;
 # see the sections called "entries[i].fieldname" in the feedparser manual at
-# <http://feedparser.org/docs/> for more details. Some possibilities:
+# <http://pythonhosted.org/feedparser/> for more details. Some possibilities:
 # title, summary, link, content, id, author...
 #
 # Some examples might make it clearer:
