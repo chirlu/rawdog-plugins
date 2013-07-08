@@ -1,5 +1,6 @@
 """
-paged-output plugin for rawdog, by Adam Sampson <ats@offog.org>
+paged-output plugin for rawdog
+Copyright 2005, 2006, 2010, 2012, 2013 Adam Sampson <ats@offog.org>
 
 Needs rawdog 2.5rc1 or later.
 
@@ -79,7 +80,7 @@ def output_write_files(rawdog, config, articles, article_dates):
 		f.write('</ul>\n')
 		bits["paged_output_pages"] = f.getvalue()
 
-		s = fill_template(rawdog.get_template(config), bits)
+		s = fill_template(rawdog.get_template("page", config), bits)
 		f = open(fn + ".new", "w")
 		write_ascii(f, s, config)
 		f.close()
