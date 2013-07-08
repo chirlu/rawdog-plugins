@@ -1,6 +1,6 @@
 """
 dated-output plugin for rawdog
-Copyright 2009, 2013 Adam Sampson <ats@offog.org>
+Copyright 2009 Adam Sampson <ats@offog.org>
 
 Needs rawdog 2.5rc1 or later, and Python 2.5.
 
@@ -219,7 +219,7 @@ class DatedOutput:
 		bits["dated_output_calendar"] = self.generate_calendar()
 		bits["dated_output_calendars"] = self.generate_calendars()
 
-		s = fill_template(rawdog.get_template("page", config), bits)
+		s = fill_template(rawdog.get_template(config), bits)
 		fn = self.current_fn
 		config.log("dated-output writing output file: ", fn)
 		f = open(fn + ".new", "w")

@@ -1,7 +1,6 @@
 """
 feed grouping and indexing for rawdog
 Copyright 2006 Zephaniah E. Hull <warp@aehallh.com>
-Copyright 2013 Adam Sampson <ats@offog.org>
 
 Written and tested with rawdog 2.6, unknown if it works with older versions.
 
@@ -75,7 +74,7 @@ def output_write_files(rawdog, config, articles, article_dates):
 	bits["items"] = f_hdr.getvalue() + f.getvalue()
 	bits["num_items"] = str(len(rawdog.articles))
 	rawdoglib.plugins.call_hook("output_bits", rawdog, config, bits)
-	s = fill_template(rawdog.get_template("page", config), bits)
+	s = fill_template(rawdog.get_template(config), bits)
 	outputfile = config["outputfile"]
 	if outputfile == "-":
 		write_ascii(sys.stdout, s, config)
