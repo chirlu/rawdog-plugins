@@ -1,6 +1,6 @@
 """
 rawdog plugin to add support for digest authentication.
-Adam Sampson <ats@offog.org>
+Copyright 2005 Adam Sampson <ats@offog.org>
 
 This is compatible with rawdog's normal basic authentication support, using
 the existing "user" and "password" feed arguments.
