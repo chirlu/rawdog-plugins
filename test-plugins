@@ -1,0 +1,267 @@
+#!/bin/sh
+# test-plugins: run tests on rawdog's plugins
+# Copyright 2013 Adam Sampson <ats@offog.org>
+#
+# rawdog is free software; you can redistribute and/or modify it
+# under the terms of that license as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option)
+# any later version.
+#
+# rawdog is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with rawdog; see the file COPYING. If not, write to the Free
+# Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301, USA, or see http://www.gnu.org/.
+
+# (This script should be called from test-rawdog, rather than run on its own.)
+
+plugin () {
+	cp rawdog-plugins/"$1" $statedir/plugins
+}
+
+# FIXME archive.py
+
+begin "article-filter plugin"
+plugin article-filter.py
+cat >$httpdir/feed.rss <<EOF
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Variably Dull Feed</title>
+    <link>http://example.org/</link>
+    <description>example-feed-description</description>
+    <item>
+      <title>Cats are awesome</title>
+      <dc:creator>Cory</dc:creator>
+      <link>http://example.org/item1</link>
+    </item>
+    <item>
+      <title>Cars are awesome</title>
+      <dc:creator>Xeni</dc:creator>
+      <link>http://example.org/item2</link>
+    </item>
+    <item>
+      <title>Fish are awesome</title>
+      <dc:creator>Mark</dc:creator>
+      <link>http://example.org/item3</link>
+    </item>
+    <item>
+      <title>Robots are awesome</title>
+      <dc:creator>Cory</dc:creator>
+      <link>http://example.org/item4</link>
+    </item>
+  </channel>
+</rss>
+EOF
+add "feed 0 $httpurl/feed.rss"
+add '    filter hide author "^Xeni" ; hide author "^Cory" ; show author "^Cory" title "(?i)robot"'
+runs -uw
+contains $statedir/output.html Fish Robots
+not_contains $statedir/output.html Cats Cars
+add '    filter hide ; show author "^Mark"'
+runs -w
+contains $statedir/output.html Fish
+not_contains $statedir/output.html Robots Cats Cars
+
+# FIXME article-stats.py
+
+begin "author-no-link plugin"
+plugin author-no-link.py
+cat >$httpdir/feed.atom <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>example-feed-title</title>
+  <link href="http://example.org/"/>
+  <updated>2013-01-01T18:00:00Z</updated>
+  <id>http://example.org/feed-id</id>
+  <entry>
+    <author>
+      <name>Author</name>
+      <email>author@example.org</email>
+    </author>
+    <title>example-item-title</title>
+    <link href="http://example.org/item"/>
+    <id>http://example.org/item-id</id>
+    <updated>2013-01-01T18:00:00Z</updated>
+    <summary>example-item-description</summary>
+  </entry>
+</feed>
+EOF
+echo "in<__author__> out<__author_no_link__>" >$statedir/item
+add "feed 0 $httpurl/feed.atom"
+add "itemtemplate item"
+runs -uw
+not_contains $statedir/output.html "in<Author>"
+contains $statedir/output.html "out<Author>"
+
+begin "backwards plugin"
+make_n 3 $httpdir/feed.rss
+add "feed 0 $httpurl/feed.rss"
+runs -uw
+grep range-title $statedir/output.html >$statedir/before
+plugin backwards.py
+runs -w
+grep range-title $statedir/output.html | tac >$statedir/after
+same $statedir/before $statedir/after
+
+# FIXME dated-output.py
+
+begin "detwit plugin"
+plugin detwit.py
+cat >$httpdir/feed.rss <<EOF
+<rss version="2.0">
+  <channel>
+    <title>Oddly Prefixed Feed</title>
+    <link>http://example.org/</link>
+    <description>example-feed-description</description>
+    <item>
+      <title>junk: actual content</title>
+      <link>http://example.org/item1</link>
+    </item>
+  </channel>
+</rss>
+EOF
+add "feed 0 $httpurl/feed.rss"
+add "  detwit true"
+runs -uw
+contains $statedir/output.html "actual content"
+not_contains $statedir/output.html "junk"
+
+begin "digest-auth plugin"
+plugin digest-auth.py
+make_atom10 $httpdir/secret.atom
+add "feed 0 $httpurl/digest-hello-world/secret.atom"
+add "    user hello"
+add "    password world"
+runs -uw
+contains $statedir/output.html example-item-title
+
+if wget --version >/dev/null 2>&1; then
+	begin "download-articles plugin"
+	plugin download-articles.py
+	make_html $httpdir/page.html
+	cat >$httpdir/feed.rss <<EOF
+<rss version="2.0">
+  <channel>
+    <title>example-feed</title>
+    <link>http://example.org/</link>
+    <description>example-feed-description</description>
+    <item>
+      <title>item-title</title>
+      <link>$httpurl/page.html</link>
+    </item>
+  </channel>
+</rss>
+EOF
+	run -s item
+	cp $outfile $statedir/item
+	echo "localcopy<__localcopy__>" >>$statedir/item
+	add "itemtemplate item"
+	add "feed 0 $httpurl/feed.rss"
+	loc=$(echo $httpurl/page.html | sed 's,^http:/,local-cache,')
+	for i in 1 2; do
+		runs -uw
+		contains $statedir/output.html "localcopy<$loc>"
+		same $statedir/$loc $httpdir/page.html
+	done
+else
+	begin "download-articles plugin (skipped; no wget)"
+fi
+
+# FIXME enclosure.py
+
+begin "feed-execute plugin"
+plugin feed-execute.py
+make_atom10 $httpdir/0.atom
+dir=$(cd $httpdir && pwd)
+add "feed 0 $httpurl/1.atom"
+add "    pre-execute mv $dir/0.atom $dir/1.atom"
+add "    post-execute mv $dir/1.atom $dir/0.atom"
+runs -uw
+contains $statedir/output.html example-item-title
+[ -e $httpdir/0.atom ] || die "post-execute didn't run"
+
+# FIXME feedgrep.py
+# FIXME feedgroup.py
+# FIXME feedwise-ca.py
+# FIXME feedwise-ig.py
+# FIXME feedwise.py
+# FIXME imgstrip.py
+# FIXME inline_link.py
+# FIXME links.py
+# FIXME ljkludge.py
+# FIXME paged-output.py
+# FIXME printnew.py
+# FIXME rss.py
+# FIXME select-feeds.py
+# FIXME sidebarfeedwise-0.1.tar.gz
+# FIXME since-last.py
+# FIXME slashdot-bam.py
+# FIXME slashdot.py
+# FIXME status-log.py
+
+begin "truncate plugin"
+plugin truncate.py
+cat >$httpdir/feed.rss <<EOF
+<rss version="2.0">
+  <channel>
+    <title>Variably Long Feed</title>
+    <link>http://example.org/</link>
+    <description>example-feed-description</description>
+    <item>
+      <title>A</title>
+      <link>http://example.org/item1</link>
+      <description>AA23456789012345678901234567890</description>
+    </item>
+    <item>
+      <title>B</title>
+      <link>http://example.org/item2</link>
+      <description>BB2345678&lt;b&gt;90123456789</description>
+    </item>
+    <item>
+      <title>C</title>
+      <link>http://example.org/item3</link>
+      <description>CC23456&lt;b&gt;</description>
+    </item>
+    <item>
+      <title>D</title>
+      <link>http://example.org/item4</link>
+      <description>DD23456789</description>
+    </item>
+  </channel>
+</rss>
+EOF
+echo "(__description__)" >>$statedir/item
+add "tidyhtml false"
+add "blocklevelhtml false"
+add "itemtemplate item"
+add "feed 0 $httpurl/feed.rss"
+add "    truncate 10"
+runs -uw
+contains $statedir/output.html \
+	"(AA23456789...)" "(BB2345678...)" "(CC23456<b>)" "(DD23456789)"
+add "    killtags true"
+rm $statedir/state
+runs -uw
+# FIXME: truncate.py should rstrip after truncating to avoid this
+contains $statedir/output.html \
+	"(AA23456789...)" "(BB2345678 ...)" "(CC23456 )" "(DD23456789)"
+
+begin "vellum-templates plugin"
+plugin vellum-templates.py
+cat >$statedir/page <<EOF
+I have <%= num_feeds %> feeds
+<% for num in range(3): %>
+Hello-<%= num %>
+<% end %>
+EOF
+add "template page"
+runs -uw
+contains $statedir/output.html \
+	"I have 0 feeds" \
+	"Hello-0" "Hello-1" "Hello-2"
+
+# FIXME xml_archiver.py
