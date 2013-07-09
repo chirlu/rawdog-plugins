@@ -1,5 +1,6 @@
 """
-Author BAM
+Copyright 2005 BAM
+Copyright 2006 Virgil Bucoci
 
 Wed Sep  6 16:59:06 EEST 2006
 Modified by Virgil Bucoci <vbucoci at acm.org>

@@ -1,4 +1,5 @@
 # printnew.py: email new entries to ourselves (or anyone we want)
+# Copyright 2005, 2009 Ted T <http://perljam.net/>
 
 import rawdoglib.rawdog
 import rawdoglib.plugins

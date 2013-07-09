@@ -1,6 +1,6 @@
 # rawdog plugin to automatically download local copies of article links
 # using wget.
-# Adam Sampson <ats@offog.org>
+# Copyright 2009, 2013 Adam Sampson <ats@offog.org>
 #
 # This plugin supports the following configuration options:
 #

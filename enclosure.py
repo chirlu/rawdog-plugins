@@ -1,4 +1,6 @@
 """enclosure.py - rawdog plugin that makes a link for enclosures
+Copyright 2006 Virgil Bucoci
+
 Author: Virgil Bucoci <vbucoci at acm.org>
 License: GNU GPL v2.0
 Date: Thu Sep  7 03:13:08 EEST 2006

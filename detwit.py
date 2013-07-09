@@ -1,8 +1,9 @@
 # rawdog plugin to chop the "whatever: " prefix off Twitter messages.
-# (Although I wrote this a while ago, and it's probably not very useful now
-# Twitter have essentially killed off their feeds, except as an example of how
-# to mangle item content.)
 # Copyright 2010, 2013 Adam Sampson <ats@offog.org>
+#
+# I wrote this a while ago, and it's probably not very useful now Twitter have
+# essentially killed off their feeds, except as an example of how to mangle
+# item content.
 
 import rawdoglib.plugins
 from rawdoglib.rawdog import parse_bool

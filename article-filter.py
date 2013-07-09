@@ -1,5 +1,5 @@
 # rawdog plugin to filter articles on various criteria
-# Adam Sampson <ats@offog.org>
+# Copyright 2006, 2009, 2012, 2013 Adam Sampson <ats@offog.org>
 #
 # This is configured by giving a "filter" argument to the relevant feed, which
 # contains a number of entries separated by spaces; each entry starts with

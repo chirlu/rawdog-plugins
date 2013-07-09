@@ -1,6 +1,7 @@
 # rawdog plugin to add author_no_link template item, equivalent to author but
 # with HTML removed.
-# Adam Sampson <ats@offog.org>, based on Stephan Manske's patch
+# Copyright 2006 Stephan Manske
+# Copyright 2006 Adam Sampson <ats@offog.org>
 
 import rawdoglib.plugins, re
 

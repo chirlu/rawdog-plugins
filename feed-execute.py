@@ -1,4 +1,6 @@
 # Add a feed option to execute a command before or after updating the feed.
+# Copyright 2005 Adam Sampson <ats@offog.org>
+#
 # This is useful if, for example, you have a file: feed that's generated on the
 # fly by a screen-scraping program.
 # Usage example:

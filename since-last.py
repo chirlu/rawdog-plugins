@@ -1,5 +1,6 @@
 """
-since-last plugin for rawdog, by Adam Sampson <ats@offog.org>
+since-last plugin for rawdog
+Copyright 2012 Adam Sampson <ats@offog.org>
 
 When writing output, only include articles that haven't previously been
 written. This is probably what you want if you run "rawdog -w" by hand whenever

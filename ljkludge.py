@@ -1,6 +1,6 @@
 """
 rawdog plugin to work around a LiveJournal digest auth bug.
-Adam Sampson <ats@offog.org>
+Copyright 2005 Adam Sampson <ats@offog.org>
 
 This is a kludge. The problem is described at:
 https://sourceforge.net/tracker/?func=detail&atid=305470&aid=1143695&group_id=5470

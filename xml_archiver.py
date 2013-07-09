@@ -1,3 +1,5 @@
+# Copyright 2005 BAM
+
 import os, time, cgi
 import rawdoglib.plugins, rawdoglib.rawdog
 import libxml2

@@ -1,5 +1,6 @@
 # Feedwise Plugin version 0.2+ats2 for Rawdog.
-# Ian Glover ian@manicai.net (modified somewhat by Adam Sampson)
+# Copyright 2005 Ian Glover <ian@manicai.net>
+# Copyright 2006 Adam Sampson <ats@offog.org> (modified somewhat)
 #
 # Sort articles into chunks by feed rather than date.
 #

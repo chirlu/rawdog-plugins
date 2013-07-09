@@ -1,4 +1,6 @@
 """
+Copyright 2005 TheCrypto
+
 This plugin adds a list of links that you can put into your rawdog template for those sites that you just can't quite RSS yet.
 
 In the config files use lines of the form

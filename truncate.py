@@ -1,5 +1,5 @@
 # rawdog plugin to truncate article descriptions to N characters.
-# Adam Sampson <ats@offog.org>
+# Copyright 2006 Adam Sampson <ats@offog.org>
 #
 # To use this, give the feed you want to truncate a "truncate" argument:
 # feed 30m http://offog.org/books/feed.rss

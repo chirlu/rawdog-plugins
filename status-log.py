@@ -1,5 +1,5 @@
 # rawdog plugin to keep a log of how successful we've been fetching feeds
-# Adam Sampson <ats@offog.org>
+# Copyright 2007, 2009, 2012 Adam Sampson <ats@offog.org>
 
 import rawdoglib.plugins, time, threading, re, os
 

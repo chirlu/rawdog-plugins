@@ -1,3 +1,6 @@
+# When rawdog shuts down, print some simple statistics about articles.
+# Copyright 2005 Adam Sampson <ats@offog.org>
+
 import rawdoglib.plugins
 
 class Stats:

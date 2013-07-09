@@ -1,4 +1,6 @@
 """inline-link ver 0.1
+Copyright 2006 Brian Jaress
+
 This plugin is for when you want to handle all your feeds in a
 consistent way, but they all use the 'description' field differently.
 Some of them use it to describe the article, some use it to repeat the

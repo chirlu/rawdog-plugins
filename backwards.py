@@ -1,5 +1,6 @@
 """
-backwards plugin for rawdog, by Adam Sampson <ats@offog.org>
+backwards plugin for rawdog
+Copyright 2005, 2009, 2012 Adam Sampson <ats@offog.org>
 
 Sort articles in the reverse of the usual order (i.e. oldest first).
 """

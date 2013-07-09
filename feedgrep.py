@@ -1,4 +1,5 @@
 r"""rawdog plugin to limit articles using regular expressions
+Copyright 2005 Steve Atwell <atwell@uiuc.edu>
 
 This rawdog plugin filters articles for a feed using Python's regular
 expressions.  Only articles containing a match to the regular expression

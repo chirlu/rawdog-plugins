@@ -5,7 +5,7 @@ Adapted from templateParser.py from Vellum 1.0a5:
   http://www.kryogenix.org/code/vellum/
 
 Copyright 2002, 2003 Stuart Langridge (original code)
-Copyright 2004, 2013 Adam Sampson (rawdog glue)
+Copyright 2004, 2013 Adam Sampson <ats@offog.org> (rawdog glue)
 
 Vellum is free software; you can redistribute and/or modify it
 under the terms of that license as published by the Free Software

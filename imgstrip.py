@@ -1,5 +1,7 @@
 """
 rawdog plugin to strip img tags from articles.
+Copyright 2006 Virgil Bucoci
+
 author Virgil Bucoci <vbucoci at acm.org>
 version 0.3
 license: GNU GPL v2.0 

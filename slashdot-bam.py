@@ -1,6 +1,8 @@
 """
 Add the "from the ... dept." lines to the descriptions of Slashdot
 articles (found in the feed as slash:department).
+
+Copyright 2006 BAM
 """
 
 class Slashdot:
