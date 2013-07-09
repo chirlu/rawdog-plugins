@@ -5,7 +5,7 @@ Adapted from templateParser.py from Vellum 1.0a5:
   http://www.kryogenix.org/code/vellum/
 
 Copyright 2002, 2003 Stuart Langridge (original code)
-Copyright 2004 Adam Sampson (rawdog glue)
+Copyright 2004, 2013 Adam Sampson (rawdog glue)
 
 Vellum is free software; you can redistribute and/or modify it
 under the terms of that license as published by the Free Software
@@ -56,9 +56,11 @@ class TemplateParser:
 					for line in f.split('\n'):
 						lines.append(line.strip() + '\n')
 				elif in_var:
-					lines.append("sys.stdout.write(" + f.strip() + ")\n")
+					lines.append("print >>sys.stdout," + f.strip() + ",\n")
+					lines.append("sys.stdout.softspace = 0")
 				else:
-					lines.append('sys.stdout.write("""' + f.replace('"','\\"') + '""")\n')
+					lines.append('print >>sys.stdout,"""' + f.replace('"','\\"') + '""",\n')
+					lines.append("sys.stdout.softspace = 0")
 
 		indent = 0
 		code = ''
