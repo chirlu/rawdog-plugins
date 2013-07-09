@@ -1,5 +1,5 @@
 # Select feeds to include in rawdog's output.
-# Copyright 2005 Adam Sampson <ats@offog.org>
+# Copyright 2005, 2013 Adam Sampson <ats@offog.org>
 #
 # Usage in config file:
 #   selectfeeds [feedurls]
