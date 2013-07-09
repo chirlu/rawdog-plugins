@@ -50,6 +50,8 @@ class Downloader:
 		# Build a wget command to download the link (and everything
 		# one step away, so we get images, CSS, etc.).
 		cmd = [
+			"env",
+			"LC_ALL=C",
 			"wget",
 			"-nc",
 			"-np",
@@ -66,10 +68,10 @@ class Downloader:
 		for l in p.stderr.readlines():
 			l = l.rstrip()
 
-			m = re.search(r'- `(.*)\' saved', l)
+			m = re.search(r'- \'(.*)\' saved', l)
 			if m is not None:
 				downloaded.append(m.group(1))
-			m = re.search(r'^File `(.*)\' already there', l)
+			m = re.search(r'^File \'(.*)\' already there', l)
 			if m is not None:
 				downloaded.append(m.group(1))
 		p.wait()
