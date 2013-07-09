@@ -1,5 +1,5 @@
 # rawdog plugin to truncate article descriptions to N characters.
-# Copyright 2006 Adam Sampson <ats@offog.org>
+# Copyright 2006, 2013 Adam Sampson <ats@offog.org>
 #
 # To use this, give the feed you want to truncate a "truncate" argument:
 # feed 30m http://offog.org/books/feed.rss
@@ -32,8 +32,8 @@ def article_seen(rawdog, config, article, ignore):
 			if l != -1 and r < l:
 				n = l
 
-			v = v[:n] + "..."
-		detail["value"] = v
+			v = v[:n].rstrip() + "..."
+		detail["value"] = v.strip()
 
 	ei = article.entry_info
 	if "content" in ei:

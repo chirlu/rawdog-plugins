@@ -231,6 +231,11 @@ cat >$httpdir/feed.rss <<EOF
       <link>http://example.org/item4</link>
       <description>DD23456789</description>
     </item>
+    <item>
+      <title>E</title>
+      <link>http://example.org/item4</link>
+      <description><b>xy</b></description>
+    </item>
   </channel>
 </rss>
 EOF
@@ -242,13 +247,15 @@ add "feed 0 $httpurl/feed.rss"
 add "    truncate 10"
 runs -uw
 contains $statedir/output.html \
-	"(AA23456789...)" "(BB2345678...)" "(CC23456<b>)" "(DD23456789)"
+	"(AA23456789...)" "(BB2345678...)" "(CC23456<b>)" "(DD23456789)" \
+	"(<b>xy</b>)"
 add "    killtags true"
 rm $statedir/state
 runs -uw
 # FIXME: truncate.py should rstrip after truncating to avoid this
 contains $statedir/output.html \
-	"(AA23456789...)" "(BB2345678 ...)" "(CC23456 )" "(DD23456789)"
+	"(AA23456789...)" "(BB2345678...)" "(CC23456)" "(DD23456789)" \
+	"(xy)"
 
 begin "vellum-templates plugin"
 plugin vellum-templates.py
