@@ -1,8 +1,26 @@
 """
 vellum-templates.py: rawdog plugin to support Vellum's template syntax
-Based on templateParser.py from Vellum 1.0a5 (copyright Stuart Langridge, and
-under the GNU GPL): http://www.kryogenix.org/code/vellum/
-rawdog glue by Adam Sampson <azz@us-lot.org>
+
+Adapted from templateParser.py from Vellum 1.0a5:
+  http://www.kryogenix.org/code/vellum/
+
+Copyright 2002, 2003 Stuart Langridge (original code)
+Copyright 2004 Adam Sampson (rawdog glue)
+
+Vellum is free software; you can redistribute and/or modify it
+under the terms of that license as published by the Free Software
+Foundation; either version 2 of the License, or (at your option)
+any later version.
+
+Vellum is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vellum; see the file COPYING. If not, write to the Free
+Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA, or see http://www.gnu.org/.
 """
 
 import rawdoglib.plugins
