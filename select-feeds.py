@@ -23,5 +23,5 @@ def filter(rawdog, config, articles):
 	if len(feeds) != 0:
 		articles[:] = [a for a in articles if feeds.has_key(a.feed)]
 	return True
-rawdoglib.plugins.attach_hook("output_filter", filter)
+rawdoglib.plugins.attach_hook("output_sorted_filter", filter)
 
