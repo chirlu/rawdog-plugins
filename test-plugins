@@ -196,9 +196,45 @@ contains $statedir/output.html example-item-title
 # FIXME paged-output.py
 # FIXME printnew.py
 # FIXME rss.py
-# FIXME select-feeds.py
+
+begin "select-feeds plugin"
+plugin select-feeds.py
+make_single $httpdir/0.atom item-a http://example.org/a http://example.org/0
+make_single $httpdir/1.atom item-b http://example.org/b http://example.org/1
+make_single $httpdir/2.atom item-c http://example.org/c http://example.org/2
+add "feed 0 $httpurl/0.atom"
+add "feed 0 $httpurl/1.atom"
+add "feed 0 $httpurl/2.atom"
+runs -uw
+contains $statedir/output.html item-a item-b item-c
+add "selectfeeds $httpurl/0.atom"
+runs -w
+contains $statedir/output.html item-a
+not_contains $statedir/output.html item-b item-c
+add "selectfeeds $httpurl/1.atom"
+runs -w
+contains $statedir/output.html item-a item-b
+not_contains $statedir/output.html item-c
+
 # FIXME sidebarfeedwise-0.1.tar.gz
-# FIXME since-last.py
+
+begin "since-last plugin"
+plugin since-last.py
+add "feed 0 $httpurl/feed.rss"
+make_range 1 5 $httpdir/feed.rss
+runs -uw
+output_range 1 5
+runs -w
+not_output_range 1 5
+make_range 6 10 $httpdir/feed.rss
+runs -uw
+output_range 6 10
+not_output_range 1 5
+make_range 11 15 $httpdir/feed.rss
+runs -uw
+output_range 11 15
+not_output_range 1 10
+
 # FIXME slashdot-bam.py
 # FIXME slashdot.py
 # FIXME status-log.py
