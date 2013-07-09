@@ -5,7 +5,7 @@
 # This plugin supports the following configuration options:
 #
 # downloaddir       Directory to download files to
-# downloadurl       How to link to outputdir in the generated HTML
+# downloadurl       How to link to downloaddir in the generated HTML
 #
 # If it succeeds in downloading a local copy of an article, it'll add a
 # "localcopy" bit to the item template for that article with the URL of the
