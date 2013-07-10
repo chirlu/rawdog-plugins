@@ -288,7 +288,6 @@ contains $statedir/output.html \
 add "    killtags true"
 rm $statedir/state
 runs -uw
-# FIXME: truncate.py should rstrip after truncating to avoid this
 contains $statedir/output.html \
 	"(AA23456789...)" "(BB2345678...)" "(CC23456)" "(DD23456789)" \
 	"(xy)"
