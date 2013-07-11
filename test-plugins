@@ -182,7 +182,7 @@ add "    pre-execute mv $dir/0.atom $dir/1.atom"
 add "    post-execute mv $dir/1.atom $dir/0.atom"
 runs -uw
 contains $statedir/output.html example-item-title
-[ -e $httpdir/0.atom ] || die "post-execute didn't run"
+exists $httpdir/0.atom
 
 # FIXME feedgrep.py
 # FIXME feedgroup.py
