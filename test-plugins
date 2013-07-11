@@ -237,7 +237,34 @@ not_output_range 1 10
 
 # FIXME slashdot-bam.py
 # FIXME slashdot.py
-# FIXME status-log.py
+
+begin "status-log plugin"
+plugin status-log.py
+make_atom10 $httpdir/feed.atom
+add "feed 0 $httpurl/feed.atom"
+runs -uw
+contains $statedir/status-log ok-200
+exists $statedir/status-log $statedir/status-log.html
+add "statuslogfile log"
+add "statusoutputfile log.html"
+runs -uw
+exists $statedir/log $statedir/log.html
+contains $statedir/log ok-304
+contains $statedir/log.html "rawdog feed status"
+add "feed 0 $httpurl/302/feed.atom"
+run -uw
+contains $statedir/log redirect-302
+add "feed 0 $httpurl/301/feed.atom"
+run -uw
+contains $statedir/log redirect-301
+add "feed 0 $httpurl/nothere.atom"
+run -uw
+contains $statedir/log error-404
+add "timeout 1s"
+add "feed 0 http://$serverhost:$timeoutport/timeout.atom"
+run -uw
+contains $statedir/log error-timeout
+contains $statedir/log.html "TO"
 
 begin "truncate plugin"
 plugin truncate.py
