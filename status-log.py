@@ -1,5 +1,9 @@
 # rawdog plugin to keep a log of how successful we've been fetching feeds
-# Copyright 2007, 2009, 2012 Adam Sampson <ats@offog.org>
+# Copyright 2007, 2009, 2012, 2013 Adam Sampson <ats@offog.org>
+#
+# FIXME: as of rawdog 2.15, this now uses different logic from rawdog itself to
+# identify timeouts, etc.; it may be better to add another hook to capture the
+# actual status rawdog reports.
 
 import rawdoglib.plugins, time, threading, re, os
 
