@@ -185,7 +185,34 @@ else
 	begin "download-articles plugin (skipped; no wget)"
 fi
 
-# FIXME enclosure.py
+begin "enclosure plugin"
+plugin enclosure.py
+cat >$httpdir/feed.rss <<EOF
+<rss version="2.0">
+  <channel>
+    <title>example-feed</title>
+    <link>http://example.org/</link>
+    <description>example-feed-description</description>
+    <item>
+      <title>item-title</title>
+      <link>$httpurl/page.html</link>
+      <enclosure url="$httpurl/podcast.mp3" length="123456" type="audio/mpeg" />
+    </item>
+  </channel>
+</rss>
+EOF
+cat >$statedir/item <<EOF
+href(__enclosure-href__)
+length(__enclosure-length__)
+type(__enclosure-type__)
+EOF
+add "feed 0 $httpurl/feed.rss"
+add "itemtemplate item"
+runs -uw
+contains $statedir/output.html \
+	"href($httpurl/podcast.mp3)" \
+	"length(123456)" \
+	"type(audio/mpeg)"
 
 begin "feed-execute plugin"
 plugin feed-execute.py
