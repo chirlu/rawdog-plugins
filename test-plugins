@@ -66,7 +66,21 @@ runs -w
 contains $statedir/output.html Fish
 not_contains $statedir/output.html Robots Cats Cars
 
-# FIXME article-stats.py
+begin "article-stats plugin"
+plugin article-stats.py
+add "expireage 0"
+add "keepmin 1"
+add "feed 0 $httpurl/feed.rss"
+make_range 1 5 $httpdir/feed.rss
+run -uw
+# added, updated, expired, total
+equals "5 0 0 5" "$(cat $outfile)"
+make_range 1 10 $httpdir/feed.rss
+run -uw
+equals "5 5 0 10" "$(cat $outfile)"
+make_range 6 10 $httpdir/feed.rss
+run -uw
+equals "0 5 5 5" "$(cat $outfile)"
 
 begin "author-no-link plugin"
 plugin author-no-link.py
