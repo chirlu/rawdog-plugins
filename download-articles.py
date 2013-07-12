@@ -68,10 +68,10 @@ class Downloader:
 		for l in p.stderr.readlines():
 			l = l.rstrip()
 
-			m = re.search(r'- \'(.*)\' saved', l)
+			m = re.search(r'- [`\'](.*)\' saved', l)
 			if m is not None:
 				downloaded.append(m.group(1))
-			m = re.search(r'^File \'(.*)\' already there', l)
+			m = re.search(r'^File [`\'](.*)\' already there', l)
 			if m is not None:
 				downloaded.append(m.group(1))
 		p.wait()
