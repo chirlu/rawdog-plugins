@@ -193,7 +193,19 @@ exists $httpdir/0.atom
 # FIXME inline_link.py
 # FIXME links.py
 # FIXME ljkludge.py
-# FIXME paged-output.py
+
+begin "paged-output plugin"
+plugin paged-output.py
+make_n 40 $httpdir/feed.rss
+add "feed 0 $httpurl/feed.rss"
+add "articlesperpage 10"
+runs -uw
+contains $statedir/output.html $(range 1 10)
+contains $statedir/output1.html $(range 11 20)
+contains $statedir/output2.html $(range 21 30)
+contains $statedir/output3.html $(range 31 40)
+not_contains $statedir/output.html $(range 11 40)
+
 # FIXME printnew.py
 # FIXME rss.py
 
