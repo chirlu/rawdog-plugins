@@ -1,10 +1,10 @@
 # rawdog plugin to write received articles out as Atom files
-# Copyright 2005, 2009 Adam Sampson <ats@offog.org>
+# Copyright 2005, 2009, 2013 Adam Sampson <ats@offog.org>
 
 # This needs my atomwriter.py module, which is available from:
 #   http://offog.org/code/misccode.html
 
-import rawdoglib.plugins, rawdoglib.feedparser
+import rawdoglib.plugins
 import atomwriter
 import os, time, errno, traceback
 from pprint import pprint
