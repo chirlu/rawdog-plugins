@@ -118,7 +118,7 @@ runs -uw
 grep range-title $statedir/output.html >$statedir/before
 plugin backwards.py
 runs -w
-grep range-title $statedir/output.html | tac >$statedir/after
+grep range-title $statedir/output.html | perl -e 'print join("", reverse(<>))' >$statedir/after
 same $statedir/before $statedir/after
 
 # FIXME dated-output.py
