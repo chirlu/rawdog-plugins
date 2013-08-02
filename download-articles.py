@@ -18,6 +18,7 @@
 # old files from the cache.
 
 import rawdoglib.plugins
+from rawdoglib.rawdog import string_to_html
 import subprocess, re
 
 class Downloader:
@@ -97,7 +98,7 @@ class Downloader:
 			pass
 		else:
 			# Add a localcopy field to the template.
-			bits["localcopy"] = self.options["downloadurl"] + "/" + local_copy
+			bits["localcopy"] = string_to_html(self.options["downloadurl"] + "/" + local_copy, config)
 
 		return True
 

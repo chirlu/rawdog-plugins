@@ -1,6 +1,6 @@
 """enclosure.py - rawdog plugin that makes a link for enclosures
 Copyright 2006 Virgil Bucoci
-Copyright 2013 Adam Sampson (fixed for newer feedparser)
+Copyright 2013 Adam Sampson (fixed for newer feedparser, escape URLs)
 
 Author: Virgil Bucoci <vbucoci at acm.org>
 License: GNU GPL v2.0
@@ -29,6 +29,7 @@ And optionally some formatting, in style.css:
 
 """
 import rawdoglib.plugins
+from rawdoglib.rawdog import string_to_html
 
 def enclosure(rawdog, config, feed, article, itembits):
     """Adds enclosure-href, enclosure-length and enclosure-type
@@ -39,7 +40,7 @@ def enclosure(rawdog, config, feed, article, itembits):
             continue
         for key in ("href", "length", "type", "title"):
             if key in link:
-                itembits["enclosure-" + key] = link[key]
+                itembits["enclosure-" + key] = string_to_html(link[key], config)
     return True
 
 rawdoglib.plugins.attach_hook("output_item_bits", enclosure)

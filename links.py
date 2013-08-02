@@ -1,5 +1,6 @@
 """
 Copyright 2005 TheCrypto
+Copyright 2013 Adam Sampson <ats@offog.org>
 
 This plugin adds a list of links that you can put into your rawdog template for those sites that you just can't quite RSS yet.
 
@@ -15,7 +16,7 @@ Version 0.1
 TheCrypto
 """
 import rawdoglib.plugins
-import rawdoglib.rawdog
+from rawdoglib.rawdog import string_to_html
 
 def links_config(config, name, value):
 	if not config.config.has_key('links'):
@@ -29,7 +30,7 @@ def links_config(config, name, value):
 def links_output_bits(rawdog, config, bits):
 	links = ""
 	for link in config['links']:
-		links += '<a href="' + link[0] + '">' + link[1] + '</a>\n'
+		links += '<a href="' + string_to_html(link[0], config) + '">' + string_to_html(link[1], config) + '</a>\n'
 	bits['links'] = links
 
 rawdoglib.plugins.attach_hook('config_option', links_config)

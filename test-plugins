@@ -194,9 +194,15 @@ cat >$httpdir/feed.rss <<EOF
     <link>http://example.org/</link>
     <description>example-feed-description</description>
     <item>
-      <title>item-title</title>
-      <link>$httpurl/page.html</link>
+      <title>item-title-1</title>
+      <link>$httpurl/1</link>
       <enclosure url="$httpurl/podcast.mp3" length="123456" type="audio/mpeg" />
+    </item>
+    <item>
+      <title>item-title</title>
+      <link>$httpurl/2</link>
+      <!-- Check that special chars get encoded properly -->
+      <enclosure url="$httpurl/script?a=x&amp;amp=y" length="7890" type="audio/mpeg" />
     </item>
   </channel>
 </rss>
@@ -212,7 +218,8 @@ runs -uw
 contains $statedir/output.html \
 	"href($httpurl/podcast.mp3)" \
 	"length(123456)" \
-	"type(audio/mpeg)"
+	"type(audio/mpeg)" \
+	"href($httpurl/script?a=x&amp;amp=y"
 
 begin "feed-execute plugin"
 plugin feed-execute.py
@@ -232,7 +239,20 @@ exists $httpdir/0.atom
 # FIXME feedwise.py
 # FIXME imgstrip.py
 # FIXME inline_link.py
-# FIXME links.py
+
+begin "links plugin"
+plugin links.py
+add "link http://example.org/ First"
+add "link http://example.org/foo?a=x&amp=y Second"
+run -s page
+cp $outfile $statedir/page
+echo __links__ >>$statedir/page
+add "pagetemplate page"
+runs -uw
+contains $statedir/output.html \
+	'<a href="http://example.org/">First</a>' \
+	'<a href="http://example.org/foo?a=x&amp;amp=y">Second</a>'
+
 # FIXME ljkludge.py
 
 begin "paged-output plugin"
@@ -288,8 +308,67 @@ runs -uw
 output_range 11 15
 not_output_range 1 10
 
-# FIXME slashdot-bam.py
-# FIXME slashdot.py
+# Generate an RSS2 feed with Slashdot's extensions.
+make_slashdot () {
+	cat >"$1" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:feedburner="http://rssnamespace.org/feedburner/ext/1.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:taxo="http://purl.org/rss/1.0/modules/taxonomy/">
+  <channel>
+    <title>Not Slashdot</title>
+    <link>http://example.org/</link>
+    <description>Description</description>
+    <item>
+      <title>item-title-1</title>
+      <link>http://example.org/item1</link>
+      <description>description-1</description>
+      <pubDate>Fri, 02 Aug 2013 09:27:00 GMT</pubDate>
+      <guid isPermaLink="false">http://not.example.org/1234567-1</guid>
+      <dc:creator>pseudonym</dc:creator>
+      <dc:subject>rawdog</dc:subject>
+      <dc:date>2013-01-01T18:00:00Z</dc:date>
+      <slash:comments>42</slash:comments>
+      <slash:department>testing-the-parser</slash:department>
+      <slash:section>news</slash:section>
+      <slash:hit_parade>1,2,3,4,5,6,7</slash:hit_parade>
+      <feedburner:origLink>http://example.org/orig/item1</feedburner:origLink>
+    </item>
+    <item>
+      <title>item-title-2</title>
+      <link>http://example.org/item2</link>
+      <description>description-2</description>
+      <guid isPermaLink="false">http://not.example.org/1234567-2</guid>
+      <slash:section>x&lt;y</slash:section>
+      <slash:department>entities-&amp;-text</slash:department>
+    </item>
+  </channel>
+</rss>
+EOF
+}
+
+begin "slashdot-bam plugin"
+plugin slashdot-bam.py
+make_slashdot $httpdir/feed.rss
+add "feed 0 $httpurl/feed.rss"
+runs -uw
+contains $statedir/output.html \
+	"from the testing-the-parser dept." \
+	"from the entities-&amp;-text dept."
+
+begin "slashdot plugin"
+plugin slashdot.py
+make_slashdot $httpdir/feed.rss
+add "feed 0 $httpurl/feed.rss"
+cat >$statedir/item <<EOF
+section(__slash-section__)
+dept(__slash-department__)
+EOF
+add "itemtemplate item"
+runs -uw
+contains $statedir/output.html \
+	"section(news)" \
+	"dept(testing-the-parser)" \
+	"section(x&lt;y)" \
+	"dept(entities-&amp;-text)"
 
 begin "status-log plugin"
 plugin status-log.py

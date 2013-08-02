@@ -1,6 +1,7 @@
 """
 Copyright 2005 BAM
 Copyright 2006 Virgil Bucoci
+Copyright 2013 Adam Sampson <ats@offog.org>
 
 Wed Sep  6 16:59:06 EEST 2006
 Modified by Virgil Bucoci <vbucoci at acm.org>
@@ -23,17 +24,16 @@ n>
 __endif__
 
 """
+import rawdoglib.plugins
+from rawdoglib.rawdog import string_to_html
 
 class Slashdot:
     def output(self, rawdog, config, feed, article, itembits):
         try:
-            itembits["slash-department"] = article.entry_info['slash_department']
-            itembits["slash-section"] = article.entry_info['slash_section']
+            itembits["slash-department"] = string_to_html(article.entry_info['slash_department'], config)
+            itembits["slash-section"] = string_to_html(article.entry_info['slash_section'], config)
         except KeyError:
             pass
         return True
 
-
-### Init code
-import rawdoglib.plugins
 rawdoglib.plugins.attach_hook("output_item_bits", Slashdot().output)
