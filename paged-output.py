@@ -1,13 +1,15 @@
 """
 paged-output plugin for rawdog
-Copyright 2005, 2006, 2010, 2012 Adam Sampson <ats@offog.org>
+Copyright 2005, 2006, 2010, 2012, 2015 Adam Sampson <ats@offog.org>
 
 Needs rawdog 2.5rc1 or later.
 
 Rather than writing a single output file, split the output into several files
-with "articlesperpage" entries in each one. Generate a __paged_output_pages__
-bit in the main template that lists the files and the date of the latest entry
-in each.
+with "articlesperpage" entries in each one.
+
+Generate a __paged_output_pages__ bit in the main template that lists the files
+and the date of the latest entry in each, and a __paged_output_head__ bit that
+can be included in <head> to add rel="next"/rel="prev" navigation links.
 """
 
 import os
@@ -79,6 +81,15 @@ def output_write_files(rawdog, config, articles, article_dates):
 			f.write('</li>\n')
 		f.write('</ul>\n')
 		bits["paged_output_pages"] = f.getvalue()
+
+		f = StringIO()
+		def make_link(rel, page):
+			if page >= 0 and page < len(chunks):
+				f.write('<link rel="%s" href="%s">\n'
+				        % (rel, os.path.basename(fns[page])))
+		make_link("next", i - 1)
+		make_link("prev", i + 1)
+		bits["paged_output_head"] = f.getvalue()
 
 		s = fill_template(rawdog.get_template(config), bits)
 		f = open(fn + ".new", "w")
